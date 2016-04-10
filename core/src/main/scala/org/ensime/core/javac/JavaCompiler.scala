@@ -61,9 +61,9 @@ class JavaCompiler(
         fm
     }
 
-    compiler.getTask(null, fileManager, listener, List(
-      "-cp", cp, "-Xlint:" + lint, "-proc:none"
-    ).asJava, null, files).asInstanceOf[JavacTask]
+    val javacOptions = "-cp" :: cp :: s"-Xlint:$lint" :: "-proc:none" :: config.javaCompilerArgs
+
+    compiler.getTask(null, fileManager, listener, javacOptions.asJava, null, files).asInstanceOf[JavacTask]
   }
 
   def internSource(sf: SourceFileInfo): JavaFileObject = {

@@ -17,6 +17,7 @@ final case class EnsimeConfig(
     name: String,
     scalaVersion: String,
     compilerArgs: List[String],
+    javaCompilerArgs: List[String],
     referenceSourceRoots: List[File],
     subprojects: List[EnsimeModule],
     formattingPrefs: FormattingPreferences,
