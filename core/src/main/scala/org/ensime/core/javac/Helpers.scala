@@ -28,17 +28,17 @@ object JavaFqn {
 
 trait Helpers extends UnsafeHelpers with SLF4JLogging {
 
-  def typeMirror(info: CompilationInfo, t: Tree): Option[TypeMirror] = {
-    Option(info.getTrees().getTypeMirror(info.getTrees().getPath(info.getCompilationUnit(), t)))
+  def typeMirror(c: Compilation, t: Tree): Option[TypeMirror] = {
+    Option(c.trees.getTypeMirror(c.trees.getPath(c.compilationUnit, t)))
   }
 
-  def typeElement(info: CompilationInfo, t: Tree): Option[Element] = {
-    typeMirror(info, t).map(info.getTypes().asElement)
+  def typeElement(c: Compilation, t: Tree): Option[Element] = {
+    typeMirror(c, t).map(c.types.asElement)
   }
 
-  def element(info: CompilationInfo, path: TreePath): Option[Element] = {
-    Option(info.getTrees.getElement(path)).orElse(unsafeGetElement(info, path.getLeaf)).orElse {
-      Option(info.getTrees().getTypeMirror(path)).flatMap { t => Option(info.getTypes.asElement(t)) }
+  def element(c: Compilation, path: TreePath): Option[Element] = {
+    Option(c.trees.getElement(path)).orElse(unsafeGetElement(path.getLeaf)).orElse {
+      Option(c.trees.getTypeMirror(path)).flatMap { t => Option(c.types.asElement(t)) }
     }
   }
 
@@ -47,32 +47,31 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
     Some(JavaFqn(front.mkString("."), back.mkString("."), None))
   }
 
-  def fqn(info: CompilationInfo, el: Element): Option[JavaFqn] = {
-    val kind = el.getKind
-    if (kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.PARAMETER) {
-      Some(JavaFqn(None, None, Some(el.getSimpleName.toString)))
-    } else if (kind == ElementKind.CONSTRUCTOR || kind == ElementKind.ENUM_CONSTANT ||
-      kind == ElementKind.METHOD || kind == ElementKind.FIELD) {
-      Option(el.getEnclosingElement).flatMap(fqn(info, _)).map(_.copy(fieldOrMethod = Some(el.toString)))
-    } else {
-      parseFqnAsClass(el.toString)
+  private val isSimpleKind = Set(ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER)
+  private val isComplexKind = Set(ElementKind.CONSTRUCTOR, ElementKind.ENUM_CONSTANT, ElementKind.METHOD, ElementKind.FIELD)
+
+  def fqn(c: Compilation, el: Element): Option[JavaFqn] = {
+    el.getKind match {
+      case k if isSimpleKind(k) => Some(JavaFqn(None, None, Some(el.getSimpleName.toString)))
+      case k if isComplexKind(k) => Option(el.getEnclosingElement).flatMap(fqn(c, _)).map(_.copy(fieldOrMethod = Some(el.toString)))
+      case k => parseFqnAsClass(el.toString)
     }
   }
 
-  def fqn(info: CompilationInfo, p: TreePath): Option[JavaFqn] = {
-    element(info, p).flatMap(fqn(info, _)).orElse({
+  def fqn(c: Compilation, p: TreePath): Option[JavaFqn] = {
+    element(c, p).flatMap(fqn(c, _)).orElse({
       p.getLeaf match {
         case t: IdentifierTree => Some(JavaFqn(None, None, Some(t.getName.toString)))
         case t => None
       }
-    }).orElse(fqn(info, info.getTrees().getTypeMirror(p)))
+    }).orElse(fqn(c, c.trees.getTypeMirror(p)))
   }
 
-  def fqn(info: CompilationInfo, t: Tree): Option[JavaFqn] = {
-    Option(info.getTrees().getPath(info.getCompilationUnit(), t)).flatMap { p => fqn(info, p) }
+  def fqn(c: Compilation, t: Tree): Option[JavaFqn] = {
+    Option(c.trees.getPath(c.compilationUnit, t)).flatMap { p => fqn(c, p) }
   }
 
-  def fqn(info: CompilationInfo, tm: TypeMirror): Option[JavaFqn] = {
+  def fqn(c: Compilation, tm: TypeMirror): Option[JavaFqn] = {
     // "Using instanceof is not necessarily a reliable idiom for
     // determining the effective class of an object in this modeling
     // hierarchy since an implementation may choose to have a single
@@ -91,5 +90,4 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
       case _ => None
     }
   }
-
 }
