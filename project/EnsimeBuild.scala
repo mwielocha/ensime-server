@@ -230,9 +230,6 @@ object EnsimeBuild extends Build {
       test in assembly := {},
       aggregate in assembly := false,
       assemblyMergeStrategy in assembly := {
-        case PathList("META-INF", "namedservices", xs @ _*) => MergeStrategy.filterDistinctLines
-        case "META-INF/namedservices.index" => MergeStrategy.filterDistinctLines
-        case "META-INF/generated-layer.xml" => MergeStrategy.rename
         case PathList("org", "apache", "commons", "vfs2", xs @ _*) => MergeStrategy.first // assumes our classpath is setup correctly
         case other => MergeStrategy.defaultMergeStrategy(other)
       },

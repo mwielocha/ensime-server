@@ -12,7 +12,7 @@ import scala.util.Success
 
 import java.lang.Void
 
-case class Hit(path: TreePath) extends Error
+case class Hit(path: TreePath) extends Exception
 
 class PathFor(private val sourcePositions: SourcePositions, private val position: Int) extends TreePathScanner[Void, Void] {
 

@@ -4,17 +4,9 @@ package org.ensime.core.javac
 
 import com.sun.source.tree._
 import com.sun.source.tree.Tree.Kind
-import com.sun.source.util.SourcePositions
-import com.sun.source.util.TreePath
-import com.sun.source.util.TreePathScanner
-import com.sun.source.util.TreeScanner
-import scala.util.Try
-import scala.util.Failure
-import scala.util.Success
-import javax.lang.model.element._
-import scala.collection.JavaConversions._
 
-import java.lang.Void
+import com.sun.source.util.TreePath
+import scala.collection.JavaConversions._
 
 object ScopeFor {
 
