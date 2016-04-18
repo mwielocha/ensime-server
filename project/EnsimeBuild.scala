@@ -141,9 +141,6 @@ object EnsimeBuild extends Build {
         "com.h2database" % "h2" % "1.4.191",
         "com.typesafe.slick" %% "slick" % "3.1.1",
         "com.zaxxer" % "HikariCP-java6" % "2.3.13",
-        // Netbeans 7.4+ needs Java 7 (7.3 only needs it at runtime)
-        "org.netbeans.api" % "org-netbeans-api-java" % "RELEASE731",
-        "org.netbeans.api" % "org-netbeans-modules-java-source" % "RELEASE731",
         // lucene 4.8+ needs Java 7: http://www.gossamer-threads.com/lists/lucene/general/225300
         "org.apache.lucene" % "lucene-core" % luceneVersion,
         "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion,
@@ -234,7 +231,6 @@ object EnsimeBuild extends Build {
       aggregate in assembly := false,
       assemblyMergeStrategy in assembly := {
         case PathList("META-INF", "namedservices", xs @ _*) => MergeStrategy.filterDistinctLines
-        case "META-INF/netbeans/translate.names" => MergeStrategy.filterDistinctLines
         case "META-INF/namedservices.index" => MergeStrategy.filterDistinctLines
         case "META-INF/generated-layer.xml" => MergeStrategy.rename
         case PathList("org", "apache", "commons", "vfs2", xs @ _*) => MergeStrategy.first // assumes our classpath is setup correctly

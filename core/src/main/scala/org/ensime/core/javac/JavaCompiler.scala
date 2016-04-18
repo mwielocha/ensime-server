@@ -132,8 +132,7 @@ class JavaCompiler(
   protected def pathToPoint(file: SourceFileInfo, offset: Int): Option[(Compilation, TreePath)] = {
     val infos = typecheckForUnits(List(file))
     infos.headOption.flatMap { c =>
-      //val path = Option(new TreeUtilities(info).pathFor(offset))
-      val path: Option[TreePath] = None // TODO: implement
+      val path: Option[TreePath] = PathFor(c, offset)
       path.map { p => (c, p) }
     }
   }
@@ -141,8 +140,7 @@ class JavaCompiler(
   protected def scopeForPoint(file: SourceFileInfo, offset: Int): Option[(Compilation, Scope)] = {
     val infos = typecheckForUnits(List(file))
     infos.headOption.flatMap { c =>
-      //val path = Option(new TreeUtilities(info).scopeFor(offset))
-      val path: Option[Scope] = None // TODO: implement
+      val path: Option[Scope] = ScopeFor(c, offset)
       path.map { p => (c, p) }
     }
   }
@@ -152,8 +150,7 @@ class JavaCompiler(
   }
 
   private def getTypeMirror(c: Compilation, offset: Int): Option[TypeMirror] = {
-    //val path = Option(new TreeUtilities(info).pathFor(offset))
-    val path: Option[TreePath] = None // TODO: implement
+    val path: Option[TreePath] = PathFor(c, offset)
     // Uncomment to debug the AST path.
     //for (p <- path) { for (t <- p) { System.err.println(t.toString()) } }
     path.flatMap { p => Option(c.trees.getTypeMirror(p)) }
