@@ -47,24 +47,17 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
     Some(JavaFqn(front.mkString("."), back.mkString("."), None))
   }
 
-  private class isOneOf(options: ElementKind*) {
-    private val contains = Set(options: _*)
-    def unapply(k: ElementKind) = contains(k)
-  }
-
-  private object isSimpleKind extends isOneOf(
-    ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER
-  )
-
-  private object isComplexKind extends isOneOf(
-    ElementKind.CONSTRUCTOR, ElementKind.ENUM_CONSTANT,
-    ElementKind.METHOD, ElementKind.FIELD
-  )
-
   def fqn(c: Compilation, el: Element): Option[JavaFqn] = {
     el.getKind match {
-      case isSimpleKind() => Some(JavaFqn(None, None, Some(el.getSimpleName.toString)))
-      case isComplexKind() => Option(el.getEnclosingElement).flatMap(fqn(c, _)).map(_.copy(fieldOrMethod = Some(el.toString)))
+
+      case ElementKind.LOCAL_VARIABLE | ElementKind.PARAMETER =>
+        Some(JavaFqn(None, None, Some(el.getSimpleName.toString)))
+
+      case ElementKind.CONSTRUCTOR | ElementKind.ENUM_CONSTANT
+        | ElementKind.METHOD | ElementKind.FIELD =>
+
+        Option(el.getEnclosingElement).flatMap(fqn(c, _)).map(_.copy(fieldOrMethod = Some(el.toString)))
+
       case k => parseFqnAsClass(el.toString)
     }
   }
