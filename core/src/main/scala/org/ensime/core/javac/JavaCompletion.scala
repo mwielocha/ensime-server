@@ -8,7 +8,7 @@ import com.sun.source.tree.{ MemberSelectTree, Tree, IdentifierTree }
 import com.sun.source.util.TreePath
 import javax.lang.model.`type`.TypeMirror
 import javax.lang.model.element.{ Element, ExecutableElement, PackageElement, TypeElement, VariableElement }
-import javax.lang.model.util.{ ElementFilter, Elements }
+import javax.lang.model.util.ElementFilter
 import org.ensime.core.CompletionUtil
 import org.ensime.util.file._
 import org.ensime.api._
@@ -18,6 +18,7 @@ import com.sun.source.tree.Scope
 import scala.collection.mutable.ArrayBuffer;
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import scala.collection.breakOut
 
 trait JavaCompletion extends Helpers with SLF4JLogging {
 
@@ -143,7 +144,7 @@ trait JavaCompletion extends Helpers with SLF4JLogging {
     // reward case case-sensitive matches
     val relevance = if (s.startsWith(prefix)) baseRelevance + 50 else baseRelevance
 
-    if (matchesPrefix(s, prefix, matchEntire = false, caseSens = caseSense) && !s.contains("$")) {
+    if (matchesPrefix(s, prefix, matchEntire = false, caseSens = caseSense) && !s.contains("$") && !s.contains("<init>")) {
       e match {
         case e: ExecutableElement if !typesOnly => List(methodInfo(e, relevance + 5))
         case e: VariableElement if !typesOnly => List(fieldInfo(e, relevance + 10))
@@ -202,27 +203,31 @@ trait JavaCompletion extends Helpers with SLF4JLogging {
   }
 
   private def memberCandidates(
-    compilation: Compilation,
+    c: Compilation,
     target: Tree,
     prefix: String,
     importing: Boolean,
     caseSense: Boolean
   ): List[CompletionInfo] = {
-    val candidates = typeElement(compilation, target).map { el =>
-      el match {
-        case tel: TypeElement => {
-          val elements: Elements = compilation.elements
-          elements.getAllMembers(tel).flatMap { e =>
-            filterElement(compilation, e, prefix, caseSense, importing, false)
-          }
-        }
-        case e => {
-          log.warn("Unrecognized type element " + e)
-          List()
-        }
-      }
-    }.getOrElse(List())
-    candidates.toList
+
+    typeElement(c, target).toList.flatMap {
+
+      case tel: TypeElement =>
+
+        val path = c.trees.getPath(c.compilationUnit, target)
+        val scope = c.trees.getScope(path)
+
+        val isAccessible: Element => Boolean = c.trees
+          .isAccessible(scope, _, c.types.getDeclaredType(tel))
+
+        c.elements.getAllMembers(tel).filter(isAccessible).flatMap { el =>
+          filterElement(c, el, prefix, caseSense, importing, false)
+        }(breakOut)
+
+      case e =>
+        log.warn("Unrecognized type element " + e)
+        List.empty
+    }
   }
 
   private def methodInfo(e: ExecutableElement, relavence: Int): CompletionInfo = {
