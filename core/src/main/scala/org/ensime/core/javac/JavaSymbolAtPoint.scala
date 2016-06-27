@@ -27,7 +27,7 @@ trait JavaSymbolAtPoint { requires: JavaCompiler =>
             .map(typeMirrorToTypeInfo(identifierName, _))
         } yield {
           SymbolInfo(
-            fqn(c, path).map(_.toFqnString).getOrElse(identifierName),
+            fqn(c, path).map(_.fqnString).getOrElse(identifierName),
             identifierName,
             findDeclPos(c, path),
             typeInfo

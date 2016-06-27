@@ -9,7 +9,7 @@ trait JavaDocFinding extends Helpers {
 
   def docSignature(c: Compilation, p: TreePath): Option[DocSigPair] = {
     fqn(c, p).map { fqn =>
-      val sig = fqn.toDocSig
+      val sig = toDocSign(fqn)
       DocSigPair(sig, sig)
     }
   }
