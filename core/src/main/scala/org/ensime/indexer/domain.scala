@@ -180,7 +180,6 @@ final case class GenericVar(name: String)
 
 sealed trait DescriptorType {
   def internalString: String
-  def fqnString: String
 }
 
 final case class ArrayDescriptor(fqn: DescriptorType) extends DescriptorType {
@@ -189,7 +188,6 @@ final case class ArrayDescriptor(fqn: DescriptorType) extends DescriptorType {
     case a: ArrayDescriptor => a.reifier
   }
   def internalString = "[" + fqn.internalString
-  def fqnString = fqn.fqnString
 }
 final case class Descriptor(params: List[DescriptorType], ret: DescriptorType) {
   def descriptorString =

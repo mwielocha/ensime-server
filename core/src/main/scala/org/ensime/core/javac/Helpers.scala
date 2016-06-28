@@ -15,7 +15,7 @@ import org.ensime.indexer._
 
 trait Helpers extends UnsafeHelpers with SLF4JLogging {
 
-  private implicit class EnhachedElement(e: Element) {
+  private implicit class EnhancedElement(e: Element) {
     def isOf(kinds: ElementKind*): Boolean = kinds.exists(_ == e.getKind)
   }
 
@@ -45,6 +45,11 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
     case x => x.fqnString
   }
 
+  private def showParam(d: DescriptorType): String = d match {
+    case a: ArrayDescriptor => showParam(a.fqn)
+    case c: ClassName => c.fqnString
+  }
+
   def fqn(c: Compilation, el: Element): Option[FullyQualifiedName] = el match {
     case e: ExecutableElement =>
 
@@ -52,7 +57,7 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
 
         val name = e.getSimpleName.toString
         val params = descriptor.params
-          .map(_.fqnString).mkString(",")
+          .map(showParam).mkString(",")
 
         MethodName(
           ClassName.fromFqn(e.getEnclosingElement.toString),
