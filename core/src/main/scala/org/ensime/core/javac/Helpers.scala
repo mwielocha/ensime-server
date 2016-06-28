@@ -69,15 +69,12 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
       Some(FieldName(
         ClassName.fromFqn(
           e.getEnclosingElement.toString
-        ),
-        e.getSimpleName.toString
-      ))
+        ), e.getSimpleName.toString))
 
     case e: VariableElement if e.isOf(ENUM_CONSTANT) =>
 
-      fqn(c, e.asType()).map {
-        FieldName(_, e.getSimpleName.toString)
-      }
+      fqn(c, e.asType()).map(
+        FieldName(_, e.getSimpleName.toString))
 
     case e => fqn(c, e.asType())
   }
@@ -85,7 +82,8 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
   private def descriptor(c: Compilation, e: ExecutableElement): Option[Descriptor] = {
     import scala.collection.breakOut
     fqn(c, e.getReturnType).map { returnType =>
-      val params: List[DescriptorType] = e.getParameters.flatMap(p => fqn(c, p.asType()))(breakOut)
+      val params: List[DescriptorType] = e.getParameters
+        .flatMap(p => fqn(c, p.asType()))(breakOut)
       Descriptor(params, returnType)
     }
   }
@@ -103,27 +101,10 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
   }
 
   def fqn(c: Compilation, tm: TypeMirror): Option[ClassName] = {
-    // "Using instanceof is not necessarily a reliable idiom for
-    // determining the effective class of an object in this modeling
-    // hierarchy since an implementation may choose to have a single
-    // object implement multiple TypeMirror subinterfaces." --
-    // TypeMirror docs
-    // tm match {
-    //   case tm: DeclaredType if tm.getKind == TypeKind.DECLARED => {
-    //     tm.asElement match {
-    //       case te: TypeElement => Some(ClassName.fromFqn(te.getQualifiedName.toString))
-    //       case _ => {
-    //         None
-    //       }
-    //     }
-    //   }
-    //   case tm: PrimitiveType if tm.getKind.isPrimitive => Some(ClassName(PackageName(Nil), tm.toString))
-    //   case _ => None
-    // }
     Some(ClassName.fromFqn(tm.toString))
   }
 
-  def toDocSign(fqn: FullyQualifiedName): DocSig = fqn match {
+  def toDocSig(fqn: FullyQualifiedName): DocSig = fqn match {
     case p: PackageName => DocSig(DocFqn(p.parent.fqnString, p.path.last), None)
     case c: ClassName => DocSig(DocFqn(c.pack.fqnString, c.name), None)
     case m: MethodName => DocSig(DocFqn(m.owner.pack.fqnString, m.owner.name), Some(m.name))
