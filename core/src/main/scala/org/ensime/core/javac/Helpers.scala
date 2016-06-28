@@ -69,12 +69,14 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
       Some(FieldName(
         ClassName.fromFqn(
           e.getEnclosingElement.toString
-        ), e.getSimpleName.toString))
+        ), e.getSimpleName.toString
+      ))
 
     case e: VariableElement if e.isOf(ENUM_CONSTANT) =>
 
       fqn(c, e.asType()).map(
-        FieldName(_, e.getSimpleName.toString))
+        FieldName(_, e.getSimpleName.toString)
+      )
 
     case e => fqn(c, e.asType())
   }
